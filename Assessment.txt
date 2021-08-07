@@ -18,25 +18,54 @@ b)update myemp set Esal=null where Esal >=5000 and Esal <=10000;
     update myemp set comm=300 where Eno=100103;
     create table empcommmnull as (select eno,ename,comm from myemp where comm IS NULL)
 
+3)ALTER TABLE myemp DROP PRIMARY KEY;
+
 4)
 CREATE OR REPLACE TRIGGER weekend1_trigger 
 BEFORE INSERT OR UPDATE OR DELETE on myemp 
   FOR EACH ROW
   DECLARE
   v_day DATE := TRUNC(SYSDATE);
+  ex_invalid  EXCEPTION; 
   BEGIN
     IF TO_CHAR(v_day,'DY')IN ('SAT','SUN') THEN
-      dbms_output.put_line('Sorry Access on week-end days is denied');
+       RAISE ex_invalid;
     END IF;
+    EXCEPTION 
+    WHEN ex_invalid THEN 
+      RAISE_APPLICATION_ERROR(-20001,'Sorry Access on week-end days is denied');
   END; 
  
 insert into myemp values(100106,'Alexa',3030,15000,3,300);
 delete from myemp where Eno=100101;
 update myemp set Ename=null where Eno=100101;
 
+5)
+DECLARE 
+   s_id student.stu_id%type := &dd_id; 
+   -- user defined exception 
+   ex_invalid_id  EXCEPTION; 
+BEGIN 
+   IF s_id <= 0 THEN 
+      RAISE ex_invalid_id; 
+   ELSE 
+      SELECT stu_id into s_id from student
+   WHERE  stu_id=s_id; 
+   DBMS_OUTPUT.PUT_LINE ('Stu id: '|| s_id);
+   END IF; 
+
+EXCEPTION 
+   WHEN ex_invalid_id THEN 
+      RAISE_APPLICATION_ERROR(-20001,'Stu id must be > 0');
+   WHEN no_data_found THEN 
+     RAISE_APPLICATION_ERROR(-20002,'No such record');
+   WHEN others THEN 
+     dbms_output.put_line('Error!'); 
+END; 
+/
+
 6)
 CREATE TABLE ebill( cno varchar2(10) primary key,cname varchar2(30) NOT NULL,nounits number(4) NOT NULL,bamt number(8,2) )
-
 
 desc ebill;
 
@@ -47,4 +76,24 @@ INSERT ALL
           INTO ebill (cno, cname,nounits,bamt) VALUES ('a14', 'xia', 14,'')
           INTO ebill (cno, cname,nounits,bamt) VALUES ('a15', 'rike', 15,'')
       SELECT * FROM dual
+
+CREATE OR REPLACE PROCEDURE ebillcalc AS ebillamt ebill%rowtype;
+CURSOR c1 IS
+SELECT *
+FROM ebill;
+cno number,
+vname varchar2,
+nounits number
+BEGIN
+
+IF nounits>=10
+ bamt:=nounits*4+200;
+ELSE IF nounits>=30
+  bamt:=nounits*6+300; 
+
+update ebill set bamt=bamt;
+
+END LOOP;
+END;
+
 
