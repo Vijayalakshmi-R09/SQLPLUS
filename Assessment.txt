@@ -1,0 +1,50 @@
+1) create table myemp(Eno number(6) PRIMARY KEY,Ename varchar2(30) NOT NULL,Deptno number(4) NOT NULL,Esal number(8,2));
+
+insert all
+    into myemp(Eno,Ename,Deptno,Esal,experience ) values(100101,'Alex',3030,15000,3)
+    into myemp(Eno,Ename,Deptno,Esal,experience ) values(100102,'Bell',3030,5000,1)
+    into myemp(Eno,Ename,Deptno,Esal,experience ) values(100103,'Clane',3030,10000,2)
+    into myemp(Eno,Ename,Deptno,Esal,experience ) values(100104,'Daneil',3030,17000,4)
+    into myemp(Eno,Ename,Deptno,Esal,experience ) values(100105,'Jack',3030,20000,5)
+    select * from dual;
+
+a)alter table myemp add experience number(2) NOT  NULL;
+
+b)update myemp set Esal=null where Esal >=5000 and Esal <=10000;
+
+2) 
+    ALTER TABLE myemp ADD comm number(3) default null;
+    update myemp set comm=300 where Eno=100102;
+    update myemp set comm=300 where Eno=100103;
+    create table empcommmnull as (select eno,ename,comm from myemp where comm IS NULL)
+
+4)
+CREATE OR REPLACE TRIGGER weekend1_trigger 
+BEFORE INSERT OR UPDATE OR DELETE on myemp 
+  FOR EACH ROW
+  DECLARE
+  v_day DATE := TRUNC(SYSDATE);
+  BEGIN
+    IF TO_CHAR(v_day,'DY')IN ('SAT','SUN') THEN
+      dbms_output.put_line('Sorry Access on week-end days is denied');
+    END IF;
+  END; 
+ 
+insert into myemp values(100106,'Alexa',3030,15000,3,300);
+delete from myemp where Eno=100101;
+update myemp set Ename=null where Eno=100101;
+
+6)
+CREATE TABLE ebill( cno varchar2(10) primary key,cname varchar2(30) NOT NULL,nounits number(4) NOT NULL,bamt number(8,2) )
+
+
+desc ebill;
+
+INSERT ALL
+         INTO ebill (cno, cname,nounits,bamt) VALUES ('a11', 'Jack', 1,'')
+          INTO ebill (cno, cname,nounits,bamt) VALUES ('a12', 'aIla', 2,'')
+          INTO ebill (cno, cname,nounits,bamt) VALUES ('a13', 'hellz', 30,'')
+          INTO ebill (cno, cname,nounits,bamt) VALUES ('a14', 'xia', 14,'')
+          INTO ebill (cno, cname,nounits,bamt) VALUES ('a15', 'rike', 15,'')
+      SELECT * FROM dual
+
