@@ -1,0 +1,234 @@
+
+
+Question 1: 
+***********
+
+SQL> create table myemp(Eno number(6) PRIMARY KEY,Ename varchar2(30) NOT NULL,Deptno number(4) NOT NULL,Esal number(8,2));
+
+Table created.
+
+SQL>    alter table myemp add experience number(2) NOT  NULL;
+
+Table altered.
+
+SQL> insert all
+  2      into myemp(Eno,Ename,Deptno,Esal ,experience) values(100101,'Alex',3030,15000,5)
+  3     into myemp(Eno,Ename,Deptno,Esal,experience) values(100102,'Bell',3030,5000,1)
+  4      into myemp(Eno,Ename,Deptno,Esal ,experience) values(100103,'Clane',3030,10000,2)
+  5     into myemp(Eno,Ename,Deptno,Esal,experience) values(100104,'Daneil',3030,17000,3)
+  6      into myemp(Eno,Ename,Deptno,Esal,experience) values(100105,'Jack',3030,20000,7)
+  7      select * from dual;
+
+5 rows created.
+
+SQL> select * from myemp;
+
+       ENO ENAME                              DEPTNO       ESAL EXPERIENCE
+---------- ------------------------------ ---------- ---------- ----------
+    100101 Alex                                 3030      15000          5
+    100102 Bell                                 3030       5000          1
+    100103 Clane                                3030      10000          2
+    100104 Daneil                               3030      17000          3
+    100105 Jack                                 3030      20000          7
+
+SQL> update myemp set Esal=null where Esal >=5000 and Esal <=10000;
+
+2 rows updated.
+
+SQL> select * from myemp;
+
+       ENO ENAME                              DEPTNO       ESAL EXPERIENCE
+---------- ------------------------------ ---------- ---------- ----------
+    100101 Alex                                 3030      15000          5
+    100102 Bell                                 3030                     1
+    100103 Clane                                3030                     2
+    100104 Daneil                               3030      17000          3
+    100105 Jack                                 3030      20000          7
+
+
+====================================================================================================================================================================================
+
+Question 2: 
+***********
+
+SQL> ALTER TABLE myemp ADD comm number(3) default null;
+
+Table altered.
+
+SQL> update myemp set comm=300 where Eno=100102;
+
+1 row updated.
+
+SQL>  update myemp set comm=300 where Eno=100103;
+
+1 row updated.
+
+SQL>  create table empcommmnull as (select eno,ename,comm from myemp where comm IS NULL)
+  2  ;
+
+Table created.
+
+SQL> select * from empcommmnull;
+
+       ENO ENAME                                COMM
+---------- ------------------------------ ----------
+    100101 Alex
+    100104 Daneil
+    100105 Jack
+
+=====================================================================================================================================================================================
+
+Question 3: 
+***********
+
+SQL> ALTER TABLE myemp DROP PRIMARY KEY;
+
+Table altered.
+
+=====================================================================================================================================================================================
+
+Question 4:
+***********
+
+SQL> CREATE OR REPLACE TRIGGER weekend1_trigger
+  2  BEFORE INSERT OR UPDATE OR DELETE on myemp
+  3    FOR EACH ROW
+  4    DECLARE
+  5    v_day DATE := TRUNC(SYSDATE);
+  6    ex_invalid  EXCEPTION;
+  7    BEGIN
+  8      IF TO_CHAR(v_day,'DY')IN ('SAT','SUN') THEN
+  9         RAISE ex_invalid;
+ 10      END IF;
+ 11      EXCEPTION
+ 12      WHEN ex_invalid THEN
+ 13        RAISE_APPLICATION_ERROR(-20001,'Sorry Access on week-end days is denied');
+ 14    END;
+ 15   /
+
+Trigger created.
+
+SQL> insert into myemp values(100106,'Alexa',3030,15000,3,300);
+insert into myemp values(100106,'Alexa',3030,15000,3,300)
+            *
+ERROR at line 1:
+ORA-20001: Sorry Access on week-end days is denied
+ORA-06512: at "SYSTEM.WEEKEND1_TRIGGER", line 10
+ORA-04088: error during execution of trigger 'SYSTEM.WEEKEND1_TRIGGER'
+
+
+SQL> delete from myemp where Eno=100101;
+delete from myemp where Eno=100101
+            *
+ERROR at line 1:
+ORA-20001: Sorry Access on week-end days is denied
+ORA-06512: at "SYSTEM.WEEKEND1_TRIGGER", line 10
+ORA-04088: error during execution of trigger 'SYSTEM.WEEKEND1_TRIGGER'
+
+
+SQL> update myemp set Ename=null where Eno=100101;
+update myemp set Ename=null where Eno=100101
+       *
+ERROR at line 1:
+ORA-20001: Sorry Access on week-end days is denied
+ORA-06512: at "SYSTEM.WEEKEND1_TRIGGER", line 10
+ORA-04088: error during execution of trigger 'SYSTEM.WEEKEND1_TRIGGER'
+
+===============================================================================================================================================================================
+
+Question 5: 
+***********
+
+SQL> DECLARE
+  2     s_id student.stu_id%type := &dd_id;
+  3     -- user defined exception
+  4     ex_invalid_id  EXCEPTION;
+  5  BEGIN
+  6     IF s_id <= 0 THEN
+  7        RAISE ex_invalid_id;
+  8     ELSE
+  9        SELECT stu_id into s_id from student
+ 10     WHERE  stu_id=s_id;
+ 11     DBMS_OUTPUT.PUT_LINE ('Stu id: '|| s_id);
+ 12     END IF;
+ 13
+ 14  EXCEPTION
+ 15     WHEN ex_invalid_id THEN
+ 16        RAISE_APPLICATION_ERROR(-20001,'Stu id must be > 0');
+ 17     WHEN no_data_found THEN
+ 18       RAISE_APPLICATION_ERROR(-20002,'No such record');
+ 19     WHEN others THEN
+ 20       dbms_output.put_line('Error!');
+ 21  END;
+ 22  /
+Enter value for dd_id: 0
+old   2:    s_id student.stu_id%type := &dd_id;
+new   2:    s_id student.stu_id%type := 0;
+DECLARE
+*
+ERROR at line 1:
+ORA-20001: Stu id must be > 0
+ORA-06512: at line 16
+
+
+=================================================================================================================================================================
+
+Question 6: 
+***********
+
+SQL> CREATE TABLE ebill( cno varchar2(10) primary key,cname varchar2(30) NOT NULL,nounits number(4) NOT NULL,bamt number(8,2));
+
+Table created.
+
+SQL> desc ebill;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ CNO                                       NOT NULL VARCHAR2(10)
+ CNAME                                     NOT NULL VARCHAR2(30)
+ NOUNITS                                   NOT NULL NUMBER(4)
+ BAMT                                               NUMBER(8,2)
+
+SQL> INSERT ALL
+  2           INTO ebill (cno, cname,nounits,bamt) VALUES ('a11', 'Jack', 1,'')
+  3            INTO ebill (cno, cname,nounits,bamt) VALUES ('a12', 'aIla', 2,'')
+  4            INTO ebill (cno, cname,nounits,bamt) VALUES ('a13', 'hellz', 30,'')
+  5            INTO ebill (cno, cname,nounits,bamt) VALUES ('a14', 'xia', 14,'')
+  6            INTO ebill (cno, cname,nounits,bamt) VALUES ('a15', 'rike', 15,'')
+  7        SELECT * FROM dual;
+
+5 rows created.
+
+SQL> select * from ebill;
+
+CNO        CNAME                             NOUNITS       BAMT
+---------- ------------------------------ ---------- ----------
+a11        Jack                                    1
+a12        aIla                                    2
+a13        hellz                                  30
+a14        xia                                    14
+a15        rike                                   15
+
+SQL> create procedure calculate(in x varchar(10), out o decimal(8,2))
+  2  begin
+  3  declare done boolean default 0;
+  4  declare units int(4);
+  5  declare cur cursor for
+  6  select nounits from ebill where cno=x;
+  7  open cur;
+  8  fetch cur into uits;
+  9  if units>200 then
+ 10  set o=(units-200)*1.5+150;
+ 11  elseif units>100 and units<200 then
+ 12  set o=(units-100)*1.5+50;
+ 13  else
+ 14  set o=units*0.5;
+ 15  end if;
+ 16  close cur;
+ 17  update ebill set bamt=o where cno=x;
+ 18  select * from ebill where cno=x;
+ 19  end
+ 20  /
+
+Warning: Procedure created with compilation errors.
+
+SQL>
